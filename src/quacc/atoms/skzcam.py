@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Union, Dict
 
 def convert_pun_to_Atoms(
-    pun_filename: Union[str, Path] ,
+    pun_filename: str | Path,
     atom_oxi_states: Dict
     ) -> Atoms:
     """
