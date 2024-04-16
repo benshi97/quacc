@@ -36,12 +36,12 @@ class ORCA(ORCA_):
         def write_input(inner_self, directory, atoms, parameters, properties):
             parameters = dict(parameters)["parameters"]
 
-            kw = dict(
-                charge=0,
-                mult=1,
-                orcasimpleinput="B3LYP def2-TZVP",
-                orcablocks="%pal nprocs 1 end",
-            )
+            kw = {
+                "charge": 0,
+                "mult": 1,
+                "orcasimpleinput": "B3LYP def2-TZVP",
+                "orcablocks": "%pal nprocs 1 end",
+            }
             kw.update(parameters)
 
             write_orca(directory / inner_self.input_file, atoms, kw)
