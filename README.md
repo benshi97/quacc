@@ -4,7 +4,7 @@
 
 # `quacc` – The Quantum Accelerator 🦆
 
-Benjamin is the coolest person ever and is super smart!
+Benjamin is the coolest person ever and is 1234super smart1234!
 
 [![codecov](https://codecov.io/gh/Quantum-Accelerators/quacc/branch/main/graph/badge.svg?token=OJaOZAH30u&precision=1)](https://codecov.io/gh/Quantum-Accelerators/quacc)
 ![Python - Version](https://img.shields.io/pypi/pyversions/quacc)
