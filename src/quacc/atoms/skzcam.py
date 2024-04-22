@@ -1,18 +1,164 @@
 from __future__ import annotations
 
+from importlib.util import find_spec
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 import numpy as np
 from ase.atoms import Atoms
 from ase.data import atomic_numbers
-from ase.io import write
+from ase.io import read, write
 from ase.units import Bohr
+from monty.dev import requires
 from monty.io import zopen
 from monty.os.path import zpath
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
+
+has_chemshell = find_spec("chemsh") is not None
+
+
+def get_cluster_info_from_slab(
+    adsorbate_slab_file: Path, slab_center_idx: list[int], adsorbate_idx: list[int]
+) -> tuple[Atoms, Atoms, int, NDArray, NDArray]:
+    """
+    Read the file containing the periodic slab and adsorbate (geometry optimized) and return the key information needed to create an embedded cluster in ChemShell.
+
+    Parameters
+    ----------
+    adsorbate_slab_file
+        The path to the file containing the adsorbate molecule on the surface slab. It can be in any format that ASE can read.
+    adsorbate_idx
+        The indices of the atoms that make up the adsorbate molecule.
+    slab_center_idx
+        The the adsorbate_slab_file, this gives the indices of the atoms that are at the 'center' of the slab right beneath the adsorbate.
+
+    Returns
+    -------
+    Atoms
+        The Atoms object of the adsorbate molecule.
+    Atoms
+        The Atoms object of the surface slab.
+    int
+        The index of the first atom of the slab as listed in slab_center_idx.
+    NDArray
+        The position of the center of the cluster.
+    NDArray
+        The vector from the center of the slab to the center of mass of the adsorbate.
+    """
+
+    # Get the necessary information for the cluster from a provided slab file (in any format that ASE can read)
+    adsorbate_slab = read(adsorbate_slab_file)
+
+    # Find indices (within adsorbate_slab) of the slab
+    slab_idx = [i for i, _ in enumerate(adsorbate_slab) if i not in adsorbate_idx]
+
+    # Create slab from adsorbate_slab
+    slab = adsorbate_slab[slab_idx]
+
+    # Find index of the first center atom of the slab as listed in slab_center_idx
+    slab_first_atom_idx = next(
+        index for index, x in enumerate(slab_idx) if x == slab_center_idx[0]
+    )
+
+    # Get the centre of the cluster from the atom indices
+    slab_center_position = np.zeros(3)
+    for atom_idx in slab_center_idx:
+        slab_center_position += adsorbate_slab.get_positions()[atom_idx]
+
+    slab_center_position = slab_center_position / len(slab_center_idx)
+
+    adsorbate = adsorbate_slab[adsorbate_idx]
+
+    # Get the relative distance of the adsorbate from the first center atom of the slab as defined in the slab_center_idx
+    adsorbate_com = adsorbate.get_center_of_mass()
+    adsorbate_vector_from_slab = (
+        adsorbate[0].position - adsorbate_slab[slab_center_idx[0]].position
+    )
+
+    # Add the height of the adsorbate from the slab along the z-direction relative to the first center atom of the slab as defined in the slab_center_idx
+    adsorbate_com_z_disp = (
+        adsorbate_com[2] - adsorbate_slab[slab_center_idx[0]].position[2]
+    )
+    center_position = (
+        np.array([0.0, 0.0, adsorbate_com_z_disp])
+        + slab_center_position
+        - adsorbate_slab[slab_center_idx[0]].position
+    )
+
+    return (
+        adsorbate,
+        slab,
+        slab_first_atom_idx,
+        center_position,
+        adsorbate_vector_from_slab,
+    )
+
+
+@requires(has_chemshell, "ChemShell is not installed")
+def generate_chemshell_cluster(
+    slab: Atoms,
+    slab_center_idx: int,
+    atom_oxi_states: dict[str, float],
+    filepath: str | Path,
+    chemsh_radius_active: float = 40.0,
+    chemsh_radius_cluster: float = 60.0,
+    chemsh_bq_layer: float = 6.0,
+    write_xyz_file: bool = False,
+) -> None:
+    """
+    Run ChemShell to create an embedded cluster from a slab.
+
+    Parameters
+    ----------
+    slab
+        The Atoms object of the slab.
+    slab_center_idx
+        The index of the (first) atom at the center of the slab, this index corresponds to the atom in the slab_center_idx list but adjusted for the slab (which does not contain the adsorbate atoms)
+    atom_oxi_states
+        The oxidation states of the atoms in the slab as a dictionary
+    filepath
+        The location where the ChemShell output files will be written.
+    chemsh_radius_cluster
+        The radius of the total embedded cluster in Angstroms.
+    chemsh_radius_active
+        The radius of the active region in Angstroms. This 'active' region is simply region where the charge fitting is performed to ensure correct Madelung potential; it can be a relatively large value.
+    chemsh_bq_layer
+        The height above the surface to place some additional fitting point charges in Angstroms; simply for better reproduction of the electrostatic potential close to the adsorbate.
+    write_xyz_file
+        Whether to write an XYZ file of the cluster for visualisation.
+
+    Returns
+    -------
+    None
+    """
+    from chemsh.io.tools import convert_atoms_to_frag
+
+    # Translate slab such that first Mg atom is at 0,0,0
+    slab.translate(-slab.get_positions()[slab_center_idx])
+
+    # Convert ASE Atoms to ChemShell Fragment object
+    slab_frag = convert_atoms_to_frag(slab, connect_mode="ionic", dim="2D")
+
+    # Add the atomic charges to the fragment
+    slab_frag.addCharges(atom_oxi_states)
+
+    # Create the chemshell cluster (i.e., add electrostatic fitting charges) from the fragment
+    chemsh_embedded_cluster = slab_frag.construct_cluster(
+        origin=slab_center_idx,
+        radius_cluster=chemsh_radius_cluster / Bohr,
+        radius_active=chemsh_radius_active / Bohr,
+        bq_layer=chemsh_bq_layer / Bohr,
+        adjust_charge="coordination_scaled",
+    )
+
+    # Save the final cluster to a .pun file
+    chemsh_embedded_cluster.save(Path(filepath).with_suffix(".pun"), "pun")
+
+    if write_xyz_file:
+        # XYZ for visualisation
+        chemsh_embedded_cluster.save(Path(filepath).with_suffix(".xyz"), "xyz")
 
 
 def create_skzcam_clusters(
@@ -20,16 +166,15 @@ def create_skzcam_clusters(
     center_position: NDArray,
     atom_oxi_states: dict[str, float],
     shell_max: int = 10,
-    shell_width: float = 0.005,
+    shell_width: float = 0.1,
     bond_dist: float = 2.5,
     ecp_dist: float = 6.0,
     write_clusters: bool = False,
     write_clusters_path: str | Path = ".",
     write_include_ecp: bool = False,
-) -> list[list[int]]:
+) -> tuple[Atoms, list[list[int]], list[list[int]]]:
     """
-    Returns a list of list containing the indices of the atoms (in embedded_cluster) which form the quantum clusters in the SKZCAM protocol.
-    The number of clusters created is controlled by the rdf_max parameter.
+    From a provided .pun file (generated by ChemShell), this function creates quantum clusters using the SKZCAM protocol. It will return the embedded cluster Atoms object and the indices of the atoms in the quantum clusters and the ECP region. The number of clusters created is controlled by the rdf_max parameter.
 
     Parameters
     ----------
@@ -56,8 +201,12 @@ def create_skzcam_clusters(
 
     Returns
     -------
+    Atoms
+        The ASE Atoms object containing the atomic coordinates and atomic charges from the .pun file.
     list[list[int]]
         A list of lists containing the indices of the atoms in each quantum cluster.
+    list[list[int]]
+        A list of lists containing the indices of the atoms in the ECP region for each quantum cluster.
     """
 
     # Read the .pun file and create the embedded_cluster Atoms object
@@ -111,7 +260,7 @@ def create_skzcam_clusters(
                 cluster_atoms,
             )
 
-    return quantum_cluster_idx, ecp_region_idx
+    return embedded_cluster, quantum_cluster_idx, ecp_region_idx
 
 
 def convert_pun_to_atoms(
@@ -205,6 +354,65 @@ def convert_pun_to_atoms(
     return embedded_cluster
 
 
+def insert_adsorbate_to_embedded_cluster(
+    embedded_cluster: Atoms,
+    adsorbate: Atoms,
+    adsorbate_vector_from_slab: NDArray,
+    quantum_cluster_idx: list[list[int]] | None = None,
+    ecp_region_idx: list[list[int]] | None = None,
+) -> tuple[Atoms, list[list[int]], list[list[int]]]:
+    """
+    Insert the adsorbate into the embedded cluster and update the quantum cluster and ECP region indices.
+
+    Parameters
+    ----------
+    embedded_cluster
+        The ASE Atoms object containing the atomic coordinates and atomic charges from the .pun file.
+    adsorbate
+        The ASE Atoms object of the adsorbate molecule.
+    adsorbate_vector_from_slab
+        The vector from the first atom of the embedded cluster to the center of mass of the adsorbate.
+    quantum_cluster_idx
+        A list of lists containing the indices of the atoms in each quantum cluster.
+    ecp_region_idx
+        A list of lists containing the indices of the atoms in the ECP region for each quantum cluster.
+
+    Returns
+    -------
+    Atoms
+        The ASE Atoms object containing the adsorbate and embedded cluster
+    list[list[int]]
+        A list of lists containing the indices of the atoms in each quantum cluster.
+    list[list[int]]
+        A list of lists containing the indices of the atoms in the ECP region for each quantum cluster.
+    """
+
+    # Remove PBC from the adsorbate
+    adsorbate.set_pbc([False, False, False])
+
+    # Translate the adsorbate to the correct position relative to the slab
+    adsorbate.translate(-adsorbate[0].position + adsorbate_vector_from_slab)
+
+    # Set oxi_state and atom_type arrays for the adsorbate
+    adsorbate.set_array("oxi_states", np.array([0.0] * len(adsorbate)))
+    adsorbate.set_array("atom_type", np.array(["adsorbate"] * len(adsorbate)))
+
+    # Add the adsorbate to the embedded cluster
+    embedded_adsorbate_cluster = adsorbate + embedded_cluster
+
+    # Update the quantum cluster and ECP region indices
+    if quantum_cluster_idx is not None:
+        quantum_cluster_idx = [
+            [idx + len(adsorbate) for idx in cluster] for cluster in quantum_cluster_idx
+        ]
+    if ecp_region_idx is not None:
+        ecp_region_idx = [
+            [idx + len(adsorbate) for idx in cluster] for cluster in ecp_region_idx
+        ]
+
+    return embedded_adsorbate_cluster, quantum_cluster_idx, ecp_region_idx
+
+
 def _get_atom_distances(embedded_cluster: Atoms, center_position: NDArray) -> NDArray:
     """
     Returns the distance of all atoms from the center position of the embedded cluster
@@ -230,7 +438,7 @@ def _get_atom_distances(embedded_cluster: Atoms, center_position: NDArray) -> ND
 def _find_cation_shells(
     embedded_cluster: Atoms,
     distances: NDArray,
-    shell_width: float = 0.005,
+    shell_width: float = 0.1,
 ) -> list[list[int]]:
     """
     Returns a list of lists containing the indices of the cations in each shell, based on distance from the embedded cluster center.
