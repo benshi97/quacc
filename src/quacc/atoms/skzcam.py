@@ -20,10 +20,10 @@ has_chemshell = find_spec("chemsh") is not None
 
 
 def generate_pointcharge_file(
-        embedded_cluster: Atoms,
-        quantum_cluster_idx: list[int],
-        ecp_region_idx: list[int],
-        filepath: str | Path
+    embedded_cluster: Atoms,
+    quantum_cluster_idx: list[int],
+    ecp_region_idx: list[int],
+    filepath: str | Path,
 ) -> None:
     """
     Generate a point charge file used for ORCA for the embedded cluster based on the quantum cluster and ECP region indices.
@@ -45,11 +45,11 @@ def generate_pointcharge_file(
     """
 
     # Get array of atom_types and oxi_states in the embedded_cluster object
-    atom_types = embedded_cluster.get_array("atom_type")
-    oxi_states = embedded_cluster.get_array("oxi_states")
+    embedded_cluster.get_array("atom_type")
+    embedded_cluster.get_array("oxi_states")
 
-    # Get indices of the point charges in the embedded cluster object with atom_type of 
-    point_charge_string = ""
+    # Get indices of the point charges in the embedded cluster object with atom_type of
+
 
 def get_cluster_info_from_slab(
     adsorbate_slab_file: str | Path,
