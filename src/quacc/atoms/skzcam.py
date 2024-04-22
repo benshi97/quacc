@@ -19,6 +19,38 @@ if TYPE_CHECKING:
 has_chemshell = find_spec("chemsh") is not None
 
 
+def generate_pointcharge_file(
+        embedded_cluster: Atoms,
+        quantum_cluster_idx: list[int],
+        ecp_region_idx: list[int],
+        filepath: str | Path
+) -> None:
+    """
+    Generate a point charge file used for ORCA for the embedded cluster based on the quantum cluster and ECP region indices.
+
+    Parameters
+    ----------
+    embedded_cluster
+        The ASE Atoms object containing the atomic coordinates and atomic charges from the .pun file.
+    quantum_cluster_idx
+        A list of lists containing the indices of the atoms in each quantum cluster.
+    ecp_region_idx
+        A list of lists containing the indices of the atoms in the ECP region for each quantum cluster.
+    filepath
+        The path to the file where the point charge file will be written.
+
+    Returns
+    -------
+    None
+    """
+
+    # Get array of atom_types and oxi_states in the embedded_cluster object
+    atom_types = embedded_cluster.get_array("atom_type")
+    oxi_states = embedded_cluster.get_array("oxi_states")
+
+    # Get indices of the point charges in the embedded cluster object with atom_type of 
+    point_charge_string = ""
+
 def get_cluster_info_from_slab(
     adsorbate_slab_file: Path, slab_center_idx: list[int], adsorbate_idx: list[int]
 ) -> tuple[Atoms, Atoms, int, NDArray, NDArray]:
@@ -403,7 +435,7 @@ def insert_adsorbate_to_embedded_cluster(
     # Update the quantum cluster and ECP region indices
     if quantum_cluster_idx is not None:
         quantum_cluster_idx = [
-            [idx + len(adsorbate) for idx in cluster] for cluster in quantum_cluster_idx
+            list(range(len(adsorbate))) + [idx + len(adsorbate) for idx in cluster] for cluster in quantum_cluster_idx
         ]
     if ecp_region_idx is not None:
         ecp_region_idx = [
