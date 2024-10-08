@@ -576,7 +576,7 @@ class SKZCAMInputSet:
                             ]
                         )
                     elif isinstance(basis_set, str):
-                        if isinstance(oniom_parameters["frozencore"], str):
+                        if basis_set in ['DZ','TZ','QZ','5Z'] and isinstance(oniom_parameters["frozencore"], str):
                             if oniom_parameters["frozencore"] == "valence":
                                 basis_name = "aV" + basis_set
                             elif oniom_parameters["frozencore"] == "semicore":

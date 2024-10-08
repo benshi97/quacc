@@ -1113,12 +1113,24 @@ def test_SKZCAMInputSet_create_element_info(skzcam_clusters_output):
         },
     }
 
+    # Test for ValueError when basis is provided as a dictionary but not for all elements
     with pytest.raises(
         ValueError,
         match="basis must be provided for all elements in the quantum cluster when provided as a dictionary.",
     ):
         element_info = skzcam_input_set.create_element_info(
             basis={"C": "def2-SVP", "O": "def2-SVPD"},
+            frozencore="semicore",
+            code="mrcc",
+            ecp={},
+            ri_scf_basis=None,
+            ri_cwft_basis=None,
+        )
+    # Test for ValueError when basis is not provided as either dictionary or string
+    with pytest.raises(
+        ValueError, match="basis must be provided as a string or dictionary of elements."):
+        element_info = skzcam_input_set.create_element_info(
+            basis=[2, 2, 10],
             frozencore="semicore",
             code="mrcc",
             ecp={},
@@ -1340,7 +1352,7 @@ def test_SKZCAMInputSet_generate_input(skzcam_clusters_output, tmp_path):
         mp2_oniom1_ll={
             "max_cluster_num": 2,
             "frozencore": "semicore",
-            "basis": "DZ",
+            "basis": "def2-SVP",
             "code": "mrcc",
         },
         deltaCC={
@@ -1355,43 +1367,10 @@ def test_SKZCAMInputSet_generate_input(skzcam_clusters_output, tmp_path):
     tmp_path_files = os.listdir(tmp_path)
     tmp_path_files.sort()
 
+    print(tmp_path_files)
+
     # Check that the input files created is correct
-    assert tmp_path_files == [
-        "MRCC_MINP_MP2_cluster_1_awCVDZ_adsorbate",
-        "MRCC_MINP_MP2_cluster_1_awCVDZ_adsorbate_slab",
-        "MRCC_MINP_MP2_cluster_1_awCVDZ_slab",
-        "MRCC_MINP_MP2_cluster_2_awCVDZ_adsorbate",
-        "MRCC_MINP_MP2_cluster_2_awCVDZ_adsorbate_slab",
-        "MRCC_MINP_MP2_cluster_2_awCVDZ_slab",
-        "MRCC_MINP_deltaCC_cluster_1_awCVDZ_adsorbate",
-        "MRCC_MINP_deltaCC_cluster_1_awCVDZ_adsorbate_slab",
-        "MRCC_MINP_deltaCC_cluster_1_awCVDZ_slab",
-        "MRCC_MINP_deltaCC_cluster_1_awCVTZ_adsorbate",
-        "MRCC_MINP_deltaCC_cluster_1_awCVTZ_adsorbate_slab",
-        "MRCC_MINP_deltaCC_cluster_1_awCVTZ_slab",
-        "ORCA_MP2_cluster_1_aVDZ.pc",
-        "ORCA_MP2_cluster_1_aVDZ_adsorbate.inp",
-        "ORCA_MP2_cluster_1_aVDZ_adsorbate_slab.inp",
-        "ORCA_MP2_cluster_1_aVDZ_slab.inp",
-        "ORCA_MP2_cluster_1_aVTZ.pc",
-        "ORCA_MP2_cluster_1_aVTZ_adsorbate.inp",
-        "ORCA_MP2_cluster_1_aVTZ_adsorbate_slab.inp",
-        "ORCA_MP2_cluster_1_aVTZ_slab.inp",
-        "ORCA_MP2_cluster_1_awCVDZ.pc",
-        "ORCA_MP2_cluster_1_awCVTZ.pc",
-        "ORCA_deltaCC_CC_cluster_1_awCVDZ_adsorbate.inp",
-        "ORCA_deltaCC_CC_cluster_1_awCVDZ_adsorbate_slab.inp",
-        "ORCA_deltaCC_CC_cluster_1_awCVDZ_slab.inp",
-        "ORCA_deltaCC_CC_cluster_1_awCVTZ_adsorbate.inp",
-        "ORCA_deltaCC_CC_cluster_1_awCVTZ_adsorbate_slab.inp",
-        "ORCA_deltaCC_CC_cluster_1_awCVTZ_slab.inp",
-        "ORCA_deltaCC_MP2_cluster_1_awCVDZ_adsorbate.inp",
-        "ORCA_deltaCC_MP2_cluster_1_awCVDZ_adsorbate_slab.inp",
-        "ORCA_deltaCC_MP2_cluster_1_awCVDZ_slab.inp",
-        "ORCA_deltaCC_MP2_cluster_1_awCVTZ_adsorbate.inp",
-        "ORCA_deltaCC_MP2_cluster_1_awCVTZ_adsorbate_slab.inp",
-        "ORCA_deltaCC_MP2_cluster_1_awCVTZ_slab.inp",
-    ]
+    assert tmp_path_files == ['MRCC_MINP_MP2_cluster_1_awCVDZ_adsorbate', 'MRCC_MINP_MP2_cluster_1_awCVDZ_adsorbate_slab', 'MRCC_MINP_MP2_cluster_1_awCVDZ_slab', 'MRCC_MINP_MP2_cluster_1_def2-SVP_adsorbate', 'MRCC_MINP_MP2_cluster_1_def2-SVP_adsorbate_slab', 'MRCC_MINP_MP2_cluster_1_def2-SVP_slab', 'MRCC_MINP_MP2_cluster_2_awCVDZ_adsorbate', 'MRCC_MINP_MP2_cluster_2_awCVDZ_adsorbate_slab', 'MRCC_MINP_MP2_cluster_2_awCVDZ_slab', 'MRCC_MINP_MP2_cluster_2_def2-SVP_adsorbate', 'MRCC_MINP_MP2_cluster_2_def2-SVP_adsorbate_slab', 'MRCC_MINP_MP2_cluster_2_def2-SVP_slab', 'MRCC_MINP_deltaCC_cluster_1_awCVDZ_adsorbate', 'MRCC_MINP_deltaCC_cluster_1_awCVDZ_adsorbate_slab', 'MRCC_MINP_deltaCC_cluster_1_awCVDZ_slab', 'MRCC_MINP_deltaCC_cluster_1_awCVTZ_adsorbate', 'MRCC_MINP_deltaCC_cluster_1_awCVTZ_adsorbate_slab', 'MRCC_MINP_deltaCC_cluster_1_awCVTZ_slab', 'ORCA_MP2_cluster_1_aVDZ.pc', 'ORCA_MP2_cluster_1_aVDZ_adsorbate.inp', 'ORCA_MP2_cluster_1_aVDZ_adsorbate_slab.inp', 'ORCA_MP2_cluster_1_aVDZ_slab.inp', 'ORCA_MP2_cluster_1_aVTZ.pc', 'ORCA_MP2_cluster_1_aVTZ_adsorbate.inp', 'ORCA_MP2_cluster_1_aVTZ_adsorbate_slab.inp', 'ORCA_MP2_cluster_1_aVTZ_slab.inp', 'ORCA_MP2_cluster_1_awCVDZ.pc', 'ORCA_MP2_cluster_1_awCVTZ.pc', 'ORCA_deltaCC_CC_cluster_1_awCVDZ_adsorbate.inp', 'ORCA_deltaCC_CC_cluster_1_awCVDZ_adsorbate_slab.inp', 'ORCA_deltaCC_CC_cluster_1_awCVDZ_slab.inp', 'ORCA_deltaCC_CC_cluster_1_awCVTZ_adsorbate.inp', 'ORCA_deltaCC_CC_cluster_1_awCVTZ_adsorbate_slab.inp', 'ORCA_deltaCC_CC_cluster_1_awCVTZ_slab.inp', 'ORCA_deltaCC_MP2_cluster_1_awCVDZ_adsorbate.inp', 'ORCA_deltaCC_MP2_cluster_1_awCVDZ_adsorbate_slab.inp', 'ORCA_deltaCC_MP2_cluster_1_awCVDZ_slab.inp', 'ORCA_deltaCC_MP2_cluster_1_awCVTZ_adsorbate.inp', 'ORCA_deltaCC_MP2_cluster_1_awCVTZ_adsorbate_slab.inp', 'ORCA_deltaCC_MP2_cluster_1_awCVTZ_slab.inp']
 
     # Check that the input files are correct are ORCA MP2 input files
     with open(Path(tmp_path, "ORCA_MP2_cluster_1_aVDZ_adsorbate_slab.inp")) as f:
