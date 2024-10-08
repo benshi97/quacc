@@ -591,35 +591,35 @@ class SKZCAMInputSet:
 
                         if oniom_method == "deltaCC":
                             mrcc_default_calc_inputs = {
-                            "calc": "LNO-CCSD(T)",
-                            "scftype": "rhf",
-                            "verbosity": 3,
-                            "mem": f"{oniom_parameters['max_memory']}MB",
-                            "symm": "off",
-                            "unit": "angs",
-                            "scfiguess": "small",
-                            "scfmaxit": 1000,
-                            "scfalg": "locfit1",
-                            "bpedo": 0.99999,
-                            "ccmaxit": 400,
-                            "usedisk": 0,
-                            "ccsdalg": "dfdirect",
-                            "ccsdthreads": 4,
-                            "ccsdmkl": "thr",
-                            "ptthreads": 4,
-                        }
+                                "calc": "LNO-CCSD(T)",
+                                "scftype": "rhf",
+                                "verbosity": 3,
+                                "mem": f"{oniom_parameters['max_memory']}MB",
+                                "symm": "off",
+                                "unit": "angs",
+                                "scfiguess": "small",
+                                "scfmaxit": 1000,
+                                "scfalg": "locfit1",
+                                "bpedo": 0.99999,
+                                "ccmaxit": 400,
+                                "usedisk": 0,
+                                "ccsdalg": "dfdirect",
+                                "ccsdthreads": 4,
+                                "ccsdmkl": "thr",
+                                "ptthreads": 4,
+                            }
                         else:
                             mrcc_default_calc_inputs = {
-                            "calc": "DF-MP2",
-                            "scftype": "rhf",
-                            "verbosity": 3,
-                            "mem": f"{oniom_parameters['max_memory']}MB",
-                            "symm": "off",
-                            "unit": "angs",
-                            "scfiguess": "small",
-                            "scfmaxit": 1000,
-                            "scfalg": "locfit1",
-                        }
+                                "calc": "DF-MP2",
+                                "scftype": "rhf",
+                                "verbosity": 3,
+                                "mem": f"{oniom_parameters['max_memory']}MB",
+                                "symm": "off",
+                                "unit": "angs",
+                                "scfiguess": "small",
+                                "scfmaxit": 1000,
+                                "scfalg": "locfit1",
+                            }
 
                         # Add default values to the mrcc_calc_inputs dictionary
                         mrcc_calc_inputs = {
@@ -637,8 +637,8 @@ class SKZCAMInputSet:
                         }
 
                         # Write MRCC input files
-                        for structure in ['adsorbate', 'slab', 'adsorbate_slab']:
-                            if oniom_method == 'deltaCC':
+                        for structure in ["adsorbate", "slab", "adsorbate_slab"]:
+                            if oniom_method == "deltaCC":
                                 write_mrcc(
                                     Path(
                                         input_dir,
@@ -646,7 +646,7 @@ class SKZCAMInputSet:
                                     ),
                                     self.adsorbate_slab_embedded_cluster,
                                     mrcc_inputs[structure],
-                                )                                
+                                )
                             else:
                                 write_mrcc(
                                     Path(
@@ -705,9 +705,11 @@ class SKZCAMInputSet:
                         }
 
                         # Write ORCA input files
-                        for structure in ['adsorbate', 'slab', 'adsorbate_slab']:
-                            if oniom_method == 'deltaCC':
-                                orca_inputs[structure]["orcasimpleinput"] = "TightSCF DLPNO-CCSD(T) TightPNO RIJCOSX SlowConv DIIS"
+                        for structure in ["adsorbate", "slab", "adsorbate_slab"]:
+                            if oniom_method == "deltaCC":
+                                orca_inputs[structure]["orcasimpleinput"] = (
+                                    "TightSCF DLPNO-CCSD(T) TightPNO RIJCOSX SlowConv DIIS"
+                                )
                                 write_orca(
                                     Path(
                                         input_dir,
@@ -715,8 +717,10 @@ class SKZCAMInputSet:
                                     ),
                                     self.adsorbate_slab_embedded_cluster,
                                     orca_inputs[structure],
-                                )  
-                                orca_inputs[structure]["orcasimpleinput"] = "TightSCF DLPNO-MP2 TightPNO RIJCOSX SlowConv DIIS"
+                                )
+                                orca_inputs[structure]["orcasimpleinput"] = (
+                                    "TightSCF DLPNO-MP2 TightPNO RIJCOSX SlowConv DIIS"
+                                )
                                 write_orca(
                                     Path(
                                         input_dir,
@@ -725,7 +729,7 @@ class SKZCAMInputSet:
                                     self.adsorbate_slab_embedded_cluster,
                                     orca_inputs[structure],
                                 )
-                            else:   
+                            else:
                                 write_orca(
                                     Path(
                                         input_dir,
@@ -733,7 +737,7 @@ class SKZCAMInputSet:
                                     ),
                                     self.adsorbate_slab_embedded_cluster,
                                     orca_inputs[structure],
-                                )                             
+                                )
                         # Write point charge files
                         orca_input_generator.create_point_charge_file(
                             Path(
