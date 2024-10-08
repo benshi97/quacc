@@ -129,7 +129,7 @@ has_chemshell = find_spec("chemsh") is not None
 class SKZCAMInputSet:
     """
     A class to generate the complete set of SKZCAM inputs for performing direct MRCC and/or ORCA calculations. We define the possibility to have 4 ONIOM layers, each of which has a low-level (ll) and high-level (hl) calculation (see: doi.org/10.1021/jp962071j). It is assumed that the low-level for the subsequent ONIOM level is the high-level for the previous ONIOM level. The deltaCC calculation is also included as an option.
-    
+
     Attributes
     ----------
     adsorbate_slab_embedded_cluster
@@ -576,7 +576,9 @@ class SKZCAMInputSet:
                             ]
                         )
                     elif isinstance(basis_set, str):
-                        if basis_set in ['DZ','TZ','QZ','5Z'] and isinstance(oniom_parameters["frozencore"], str):
+                        if basis_set in ["DZ", "TZ", "QZ", "5Z"] and isinstance(
+                            oniom_parameters["frozencore"], str
+                        ):
                             if oniom_parameters["frozencore"] == "valence":
                                 basis_name = "aV" + basis_set
                             elif oniom_parameters["frozencore"] == "semicore":
