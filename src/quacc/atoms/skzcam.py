@@ -263,7 +263,7 @@ class SKZCAMInputSet:
             self.skzcam_input_sets["mp2_oniom4_hl"] = _format_oniom_dict(mp2_oniom4_hl)
         if deltaCC:
             self.deltaCC = deltaCC
-            self.skzcam_input_sets["deltaCC"] = deltaCC
+            self.skzcam_input_sets["deltaCC"] = _format_oniom_dict(deltaCC)
 
         # Check that the quantum_cluster_indices_set and ecp_region_indices_set are the same length
         if len(self.quantum_cluster_indices_set) != len(self.ecp_region_indices_set):
@@ -331,7 +331,6 @@ class SKZCAMInputSet:
 
         # Choose whether to provide preset values for the element info dictionary based on the SKZCAM paper:
         # Preset values are used if basis is not a dictionary or frozencore is not a dictionary
-        use_presets = False
         if (
             isinstance(basis, str)
             and isinstance(frozencore, str)
@@ -339,6 +338,8 @@ class SKZCAMInputSet:
             and frozencore in ["valence", "semicore"]
         ):
             use_presets = True
+        else:
+            use_presets = False
 
         element_info_dict = {}
         # If use_presets is True, use some preset inputs based on basis set and frozen core
@@ -507,7 +508,7 @@ class SKZCAMInputSet:
         """
 
         # Start by writing the input files for the MP2 calculations
-        for oniom_parameters in self.skzcam_input_sets.values():
+        for oniom_method, oniom_parameters in self.skzcam_input_sets.items():
             for cluster_num in range(1, oniom_parameters["max_cluster_num"] + 1):
                 if isinstance(oniom_parameters["basis"], dict):
                     # Get a list of basis sets for the oniom_method. This would just be the single basis set specified if there is no CBS(../..) specified, otherwise, it would be a list of two basis sets.
@@ -543,7 +544,6 @@ class SKZCAMInputSet:
                         basis_sets = [oniom_parameters["basis"]]
                 else:
                     raise ValueError("basis must be given as a string or a dictionary.")
-
                 for basis_set in basis_sets:
                     if isinstance(basis_set, dict):
                         ordered_basis_set = dict(sorted(basis_set.items()))
@@ -589,7 +589,27 @@ class SKZCAMInputSet:
                             },
                         ).generate_input()
 
-                        mrcc_default_calc_inputs = {
+                        if oniom_method == "deltaCC":
+                            mrcc_default_calc_inputs = {
+                            "calc": "LNO-CCSD(T)",
+                            "scftype": "rhf",
+                            "verbosity": 3,
+                            "mem": f"{oniom_parameters['max_memory']}MB",
+                            "symm": "off",
+                            "unit": "angs",
+                            "scfiguess": "small",
+                            "scfmaxit": 1000,
+                            "scfalg": "locfit1",
+                            "bpedo": 0.99999,
+                            "ccmaxit": 400,
+                            "usedisk": 0,
+                            "ccsdalg": "dfdirect",
+                            "ccsdthreads": 4,
+                            "ccsdmkl": "thr",
+                            "ptthreads": 4,
+                        }
+                        else:
+                            mrcc_default_calc_inputs = {
                             "calc": "DF-MP2",
                             "scftype": "rhf",
                             "verbosity": 3,
@@ -617,33 +637,29 @@ class SKZCAMInputSet:
                         }
 
                         # Write MRCC input files
-                        write_mrcc(
-                            Path(
-                                input_dir,
-                                f"MRCC_MINP_MP2_cluster_{cluster_num}_{basis_name}_adsorbate_slab",
-                            ),
-                            self.adsorbate_slab_embedded_cluster,
-                            mrcc_inputs["adsorbate_slab"],
-                        )
-                        write_mrcc(
-                            Path(
-                                input_dir,
-                                f"MRCC_MINP_MP2_cluster_{cluster_num}_{basis_name}_slab",
-                            ),
-                            self.adsorbate_slab_embedded_cluster,
-                            mrcc_inputs["slab"],
-                        )
-                        write_mrcc(
-                            Path(
-                                input_dir,
-                                f"MRCC_MINP_MP2_cluster_{cluster_num}_{basis_name}_adsorbate",
-                            ),
-                            self.adsorbate_slab_embedded_cluster,
-                            mrcc_inputs["adsorbate"],
-                        )
+                        for structure in ['adsorbate', 'slab', 'adsorbate_slab']:
+                            if oniom_method == 'deltaCC':
+                                write_mrcc(
+                                    Path(
+                                        input_dir,
+                                        f"MRCC_MINP_deltaCC_cluster_{cluster_num}_{basis_name}_{structure}",
+                                    ),
+                                    self.adsorbate_slab_embedded_cluster,
+                                    mrcc_inputs[structure],
+                                )                                
+                            else:
+                                write_mrcc(
+                                    Path(
+                                        input_dir,
+                                        f"MRCC_MINP_MP2_cluster_{cluster_num}_{basis_name}_{structure}",
+                                    ),
+                                    self.adsorbate_slab_embedded_cluster,
+                                    mrcc_inputs[structure],
+                                )
+
                     elif oniom_parameters["code"] == "orca":
                         element_info = self.create_element_info(
-                            basis=oniom_parameters["basis"],
+                            basis=basis_set,
                             frozencore=oniom_parameters["frozencore"],
                             code=oniom_parameters["code"],
                             ecp=oniom_parameters["ecp"],
@@ -689,30 +705,36 @@ class SKZCAMInputSet:
                         }
 
                         # Write ORCA input files
-                        write_orca(
-                            Path(
-                                input_dir,
-                                f"ORCA_MP2_cluster_{cluster_num}_{basis_name}_adsorbate.inp",
-                            ),
-                            self.adsorbate_slab_embedded_cluster,
-                            orca_inputs["adsorbate"],
-                        )
-                        write_orca(
-                            Path(
-                                input_dir,
-                                f"ORCA_MP2_cluster_{cluster_num}_{basis_name}_slab.inp",
-                            ),
-                            self.adsorbate_slab_embedded_cluster,
-                            orca_inputs["slab"],
-                        )
-                        write_orca(
-                            Path(
-                                input_dir,
-                                f"ORCA_MP2_cluster_{cluster_num}_{basis_name}_adsorbate_slab.inp",
-                            ),
-                            self.adsorbate_slab_embedded_cluster,
-                            orca_inputs["adsorbate_slab"],
-                        )
+                        for structure in ['adsorbate', 'slab', 'adsorbate_slab']:
+                            if oniom_method == 'deltaCC':
+                                orca_inputs[structure]["orcasimpleinput"] = "TightSCF DLPNO-CCSD(T) TightPNO RIJCOSX SlowConv DIIS"
+                                write_orca(
+                                    Path(
+                                        input_dir,
+                                        f"ORCA_deltaCC_CC_cluster_{cluster_num}_{basis_name}_{structure}.inp",
+                                    ),
+                                    self.adsorbate_slab_embedded_cluster,
+                                    orca_inputs[structure],
+                                )  
+                                orca_inputs[structure]["orcasimpleinput"] = "TightSCF DLPNO-MP2 TightPNO RIJCOSX SlowConv DIIS"
+                                write_orca(
+                                    Path(
+                                        input_dir,
+                                        f"ORCA_deltaCC_MP2_cluster_{cluster_num}_{basis_name}_{structure}.inp",
+                                    ),
+                                    self.adsorbate_slab_embedded_cluster,
+                                    orca_inputs[structure],
+                                )
+                            else:   
+                                write_orca(
+                                    Path(
+                                        input_dir,
+                                        f"ORCA_MP2_cluster_{cluster_num}_{basis_name}_{structure}.inp",
+                                    ),
+                                    self.adsorbate_slab_embedded_cluster,
+                                    orca_inputs[structure],
+                                )                             
+                        # Write point charge files
                         orca_input_generator.create_point_charge_file(
                             Path(
                                 input_dir,

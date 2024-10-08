@@ -519,6 +519,31 @@ def test_SKZCAMInputSet_init(skzcam_clusters_output):
         },
     }
 
+    # Check when deltaCC is included
+    skzcam_input_set = SKZCAMInputSet(
+        adsorbate_slab_embedded_cluster=skzcam_clusters_output[
+            "adsorbate_slab_embedded_cluster"
+        ],
+        quantum_cluster_indices_set=skzcam_clusters_output[
+            "quantum_cluster_indices_set"
+        ],
+        ecp_region_indices_set=skzcam_clusters_output["ecp_region_indices_set"],
+        mp2_oniom1_ll={
+            "max_cluster_num": 2,
+            "frozencore": "semicore",
+            "basis": "def2-SVP",
+            "code": "mrcc",
+        },
+        deltaCC={
+            "max_cluster_num": 1,
+            "frozencore": "valence",
+            "basis": "def2-QZVPP",
+            "code": "mrcc",
+        },
+    )
+
+    assert skzcam_input_set.skzcam_input_sets == {'mp2_oniom1_ll': {'max_cluster_num': 2, 'frozencore': 'semicore', 'basis': 'def2-SVP', 'code': 'mrcc', 'multiplicities': {'adsorbate_slab': 1, 'adsorbate': 1, 'slab': 1}, 'ecp': {}, 'ri_scf_basis': None, 'ri_cwft_basis': None, 'nprocs': 1, 'max_memory': 1000, 'mrcc_calc_inputs': {}}, 'deltaCC': {'max_cluster_num': 1, 'frozencore': 'valence', 'basis': 'def2-QZVPP', 'code': 'mrcc', 'multiplicities': {'adsorbate_slab': 1, 'adsorbate': 1, 'slab': 1}, 'ecp': {}, 'ri_scf_basis': None, 'ri_cwft_basis': None, 'nprocs': 1, 'max_memory': 1000, 'mrcc_calc_inputs': {}}}
+
     # Check if errors are raised if length of quantum_cluster_indices_set is different from ecp_region_indices_set
     with pytest.raises(
         ValueError,
@@ -1248,7 +1273,7 @@ def test_SKZCAMInputSet_create_element_info(skzcam_clusters_output):
         )
 
 
-def test_SKZCAMInputSet_generate_input(skzcam_clusters_output, tmp_path):
+def test_SKZCAMInputSet_generate_input(skzcam_clusters_output,tmp_path):
     skzcam_input_set = SKZCAMInputSet(
         adsorbate_slab_embedded_cluster=skzcam_clusters_output[
             "adsorbate_slab_embedded_cluster"
@@ -1269,55 +1294,59 @@ def test_SKZCAMInputSet_generate_input(skzcam_clusters_output, tmp_path):
             "basis": "CBS(DZ/TZ)",
             "code": "orca",
         },
+        deltaCC={
+            "max_cluster_num": 1,
+            "frozencore": "semicore",
+            "basis": "CBS(DZ/TZ)",
+            "code": "orca"
+        }
     )
-
     skzcam_input_set.generate_input(tmp_path)
+    skzcam_input_set = SKZCAMInputSet(
+        adsorbate_slab_embedded_cluster=skzcam_clusters_output[
+            "adsorbate_slab_embedded_cluster"
+        ],
+        quantum_cluster_indices_set=skzcam_clusters_output[
+            "quantum_cluster_indices_set"
+        ],
+        ecp_region_indices_set=skzcam_clusters_output["ecp_region_indices_set"],
+        mp2_oniom1_ll={
+            "max_cluster_num": 2,
+            "frozencore": "semicore",
+            "basis": "DZ",
+            "code": "mrcc",
+        },
+        deltaCC={
+            "max_cluster_num": 1,
+            "frozencore": "semicore",
+            "basis": "CBS(DZ/TZ)",
+            "code": "mrcc"
+        }
+    )
+    skzcam_input_set.generate_input(tmp_path)
+
     tmp_path_files = os.listdir(tmp_path)
     tmp_path_files.sort()
-    assert tmp_path_files == [
-        "MRCC_MINP_MP2_cluster_1_awCVDZ_adsorbate",
-        "MRCC_MINP_MP2_cluster_1_awCVDZ_adsorbate_slab",
-        "MRCC_MINP_MP2_cluster_1_awCVDZ_slab",
-        "MRCC_MINP_MP2_cluster_2_awCVDZ_adsorbate",
-        "MRCC_MINP_MP2_cluster_2_awCVDZ_adsorbate_slab",
-        "MRCC_MINP_MP2_cluster_2_awCVDZ_slab",
-        "ORCA_MP2_cluster_1_aVDZ.pc",
-        "ORCA_MP2_cluster_1_aVDZ_adsorbate.inp",
-        "ORCA_MP2_cluster_1_aVDZ_adsorbate_slab.inp",
-        "ORCA_MP2_cluster_1_aVDZ_slab.inp",
-        "ORCA_MP2_cluster_1_aVTZ.pc",
-        "ORCA_MP2_cluster_1_aVTZ_adsorbate.inp",
-        "ORCA_MP2_cluster_1_aVTZ_adsorbate_slab.inp",
-        "ORCA_MP2_cluster_1_aVTZ_slab.inp",
-    ]
 
-    # Check that the input files are correct
+    # Check that the input files created is correct
+    assert tmp_path_files == ['MRCC_MINP_MP2_cluster_1_awCVDZ_adsorbate', 'MRCC_MINP_MP2_cluster_1_awCVDZ_adsorbate_slab', 'MRCC_MINP_MP2_cluster_1_awCVDZ_slab', 'MRCC_MINP_MP2_cluster_2_awCVDZ_adsorbate', 'MRCC_MINP_MP2_cluster_2_awCVDZ_adsorbate_slab', 'MRCC_MINP_MP2_cluster_2_awCVDZ_slab', 'MRCC_MINP_deltaCC_cluster_1_awCVDZ_adsorbate', 'MRCC_MINP_deltaCC_cluster_1_awCVDZ_adsorbate_slab', 'MRCC_MINP_deltaCC_cluster_1_awCVDZ_slab', 'MRCC_MINP_deltaCC_cluster_1_awCVTZ_adsorbate', 'MRCC_MINP_deltaCC_cluster_1_awCVTZ_adsorbate_slab', 'MRCC_MINP_deltaCC_cluster_1_awCVTZ_slab', 'ORCA_MP2_cluster_1_aVDZ.pc', 'ORCA_MP2_cluster_1_aVDZ_adsorbate.inp', 'ORCA_MP2_cluster_1_aVDZ_adsorbate_slab.inp', 'ORCA_MP2_cluster_1_aVDZ_slab.inp', 'ORCA_MP2_cluster_1_aVTZ.pc', 'ORCA_MP2_cluster_1_aVTZ_adsorbate.inp', 'ORCA_MP2_cluster_1_aVTZ_adsorbate_slab.inp', 'ORCA_MP2_cluster_1_aVTZ_slab.inp', 'ORCA_MP2_cluster_1_awCVDZ.pc', 'ORCA_MP2_cluster_1_awCVTZ.pc', 'ORCA_deltaCC_CC_cluster_1_awCVDZ_adsorbate.inp', 'ORCA_deltaCC_CC_cluster_1_awCVDZ_adsorbate_slab.inp', 'ORCA_deltaCC_CC_cluster_1_awCVDZ_slab.inp', 'ORCA_deltaCC_CC_cluster_1_awCVTZ_adsorbate.inp', 'ORCA_deltaCC_CC_cluster_1_awCVTZ_adsorbate_slab.inp', 'ORCA_deltaCC_CC_cluster_1_awCVTZ_slab.inp', 'ORCA_deltaCC_MP2_cluster_1_awCVDZ_adsorbate.inp', 'ORCA_deltaCC_MP2_cluster_1_awCVDZ_adsorbate_slab.inp', 'ORCA_deltaCC_MP2_cluster_1_awCVDZ_slab.inp', 'ORCA_deltaCC_MP2_cluster_1_awCVTZ_adsorbate.inp', 'ORCA_deltaCC_MP2_cluster_1_awCVTZ_adsorbate_slab.inp', 'ORCA_deltaCC_MP2_cluster_1_awCVTZ_slab.inp']
+
+    # Check that the input files are correct are ORCA MP2 input files
     with open(Path(tmp_path, "ORCA_MP2_cluster_1_aVDZ_adsorbate_slab.inp")) as f:
         orca_adsorbate_slab_lines = f.readlines()[::10]
+    assert orca_adsorbate_slab_lines == ['! TightSCF RI-MP2 RIJCOSX SlowConv DIIS \n', 'end\n', '%scf\n', 'Mult 1\n', 'O                       0.00000000000   -2.12018425659    0.00567209089\n', 'd 1\n', '1      1.732000000   14.676000000 2\n', 'N_core 0\n', 'end\n', '1      1.203000000   -1.816000000 2\n', 'p 1\n', 'lmax f\n', 'Mg>    2.00000000000    2.10705287155    0.00000000000   -2.14155206950\n', 'f 1\n', '1      1.115000000    5.175700000 2\n', 's 1\n', 'NewECP\n', '1      1.000000000    0.000000000 2\n', 'd 1\n', '1      1.732000000   14.676000000 2\n', 'N_core 0\n', 'end\n']
 
-    assert orca_adsorbate_slab_lines == [
-        "! TightSCF RI-MP2 RIJCOSX SlowConv DIIS \n",
-        "end\n",
-        "sthresh 1e-6\n",
-        "C                       0.00000000000    0.00000000000    2.00000000000\n",
-        "N_core 0\n",
-        "end\n",
-        "1      1.203000000   -1.816000000 2\n",
-        "p 1\n",
-        "lmax f\n",
-        "Mg>    2.00000000000   -2.10705287155    0.00000000000   -2.14155206950\n",
-        "f 1\n",
-        "1      1.115000000    5.175700000 2\n",
-        "s 1\n",
-        "NewECP\n",
-        "1      1.000000000    0.000000000 2\n",
-        "d 1\n",
-        "1      1.732000000   14.676000000 2\n",
-        "N_core 0\n",
-        "end\n",
-        "1      1.203000000   -1.816000000 2\n",
-        "p 1\n",
-    ]
+    with open(Path(tmp_path, "ORCA_deltaCC_CC_cluster_1_awCVDZ_slab.inp")) as f:
+        orca_slab_lines = f.readlines()[::10]
+    
+    assert orca_slab_lines == ['! TightSCF DLPNO-CCSD(T) TightPNO RIJCOSX SlowConv DIIS \n', 'end\n', '%scf\n', 'Mult 1\n', 'O                       0.00000000000   -2.12018425659    0.00567209089\n', 'd 1\n', '1      1.732000000   14.676000000 2\n', 'N_core 0\n', 'end\n', '1      1.203000000   -1.816000000 2\n', 'p 1\n', 'lmax f\n', 'Mg>    2.00000000000    2.10705287155    0.00000000000   -2.14155206950\n', 'f 1\n', '1      1.115000000    5.175700000 2\n', 's 1\n', 'NewECP\n', '1      1.000000000    0.000000000 2\n', 'd 1\n', '1      1.732000000   14.676000000 2\n', 'N_core 0\n', 'end\n']
+
+
+    # Check deltaCC input file
+    with open(Path(tmp_path, "MRCC_MINP_deltaCC_cluster_1_awCVDZ_adsorbate_slab")) as f:
+        mrcc_adsorbate_slab_lines = f.readlines()[::30]
+
+    assert mrcc_adsorbate_slab_lines == ['calc=LNO-CCSD(T)\n', 'no-basis-set\n', 'no-basis-set\n', 'aug-cc-pVDZ-RI\n', 'none\n', 'Mg                      2.11144262254    2.11144262254   -0.04367284424\n', '    -2.11070451449   -2.11070451449   -2.14923989662   -2.00000000000\n', '    -2.11024676395    2.11024676395   -4.26789528527    2.00000000000\n', '    -2.11144262254    6.32954443328   -0.04367284424    2.00000000000\n', '    -4.22049352791   -4.22049352791   -4.26789528527    2.00000000000\n', '     2.11024676395   -6.33074029186   -4.26789528527    2.00000000000\n', '     6.33074029186    4.22049352791   -4.26789528527   -2.00000000000\n', '    -2.11024676395    6.33074029186   -6.37814204923   -2.00000000000\n', '     8.44098705582    2.11024676395   -4.26789528527   -2.00000000000\n', '     6.32080279923   -8.44098705582    0.00567209089   -2.00000000000\n', '    -8.44098705582   -6.33393418427   -2.14155206950    2.00000000000\n', '   -23.21271440350  -54.86641586281   -6.37814204923    1.20000000000\n', '   -49.48825903601  -28.57205967617  -23.66986924560    2.14422466300\n', '    23.66986924560   57.14411935233   25.90865139674    2.10472998620\n']
 
     with open(Path(tmp_path, "MRCC_MINP_MP2_cluster_1_awCVDZ_adsorbate")) as f:
         mrcc_adsorbate_lines = f.readlines()[::2]
@@ -1365,6 +1394,71 @@ def test_SKZCAMInputSet_generate_input(skzcam_clusters_output, tmp_path):
         "ghost=serialno\n",
         "\n",
     ]
+
+    # Testing generating input files when supplied as a dictionary
+    skzcam_input_set = SKZCAMInputSet(
+        adsorbate_slab_embedded_cluster=skzcam_clusters_output[
+            "adsorbate_slab_embedded_cluster"
+        ],
+        quantum_cluster_indices_set=skzcam_clusters_output[
+            "quantum_cluster_indices_set"
+        ],
+        ecp_region_indices_set=skzcam_clusters_output["ecp_region_indices_set"],
+        mp2_oniom1_ll={
+            "max_cluster_num": 2,
+            "frozencore": "semicore",
+            "basis": {'C': 'def2-SVP', 'O': 'def2-TZVPP', 'Mg': 'def2-TZVP'},
+            "code": "mrcc",
+        },
+        mp2_oniom1_hl={
+            "max_cluster_num": 1,
+            "frozencore": "valence",
+            "basis": {'C': 'CBS(def2-SVP/def2-TZVPP)', 'O': 'CBS(def2-SVP/def2-TZVPP)', 'Mg': 'CBS(def2-TZVPP/def2-QZVPP)'},
+            "code": "orca",
+        }
+    )
+    # Make a second tmp_path
+    tmp_path_2 = tmp_path / "tmp_path_2"
+    tmp_path_2.mkdir()
+
+    skzcam_input_set.generate_input(tmp_path_2)
+
+
+
+    tmp_path_files = os.listdir(tmp_path_2)
+    tmp_path_files.sort()
+    assert tmp_path_files == ['MRCC_MINP_MP2_cluster_1_C-def2-SVP_Mg-def2-TZVP_O-def2-TZVPP_adsorbate', 'MRCC_MINP_MP2_cluster_1_C-def2-SVP_Mg-def2-TZVP_O-def2-TZVPP_adsorbate_slab', 'MRCC_MINP_MP2_cluster_1_C-def2-SVP_Mg-def2-TZVP_O-def2-TZVPP_slab', 'MRCC_MINP_MP2_cluster_2_C-def2-SVP_Mg-def2-TZVP_O-def2-TZVPP_adsorbate', 'MRCC_MINP_MP2_cluster_2_C-def2-SVP_Mg-def2-TZVP_O-def2-TZVPP_adsorbate_slab', 'MRCC_MINP_MP2_cluster_2_C-def2-SVP_Mg-def2-TZVP_O-def2-TZVPP_slab', 'ORCA_MP2_cluster_1_C-def2-SVP_Mg-def2-TZVPP_O-def2-SVP.pc', 'ORCA_MP2_cluster_1_C-def2-SVP_Mg-def2-TZVPP_O-def2-SVP_adsorbate.inp', 'ORCA_MP2_cluster_1_C-def2-SVP_Mg-def2-TZVPP_O-def2-SVP_adsorbate_slab.inp', 'ORCA_MP2_cluster_1_C-def2-SVP_Mg-def2-TZVPP_O-def2-SVP_slab.inp', 'ORCA_MP2_cluster_1_C-def2-TZVPP_Mg-def2-QZVPP_O-def2-TZVPP.pc', 'ORCA_MP2_cluster_1_C-def2-TZVPP_Mg-def2-QZVPP_O-def2-TZVPP_adsorbate.inp', 'ORCA_MP2_cluster_1_C-def2-TZVPP_Mg-def2-QZVPP_O-def2-TZVPP_adsorbate_slab.inp', 'ORCA_MP2_cluster_1_C-def2-TZVPP_Mg-def2-QZVPP_O-def2-TZVPP_slab.inp']
+
+    # Check that the input files are correct
+    with open(Path(tmp_path_2, "ORCA_MP2_cluster_1_C-def2-TZVPP_Mg-def2-QZVPP_O-def2-TZVPP_adsorbate_slab.inp")) as f:
+        orca_adsorbate_slab_lines = f.readlines()[::30]
+    assert orca_adsorbate_slab_lines == ['! TightSCF RI-MP2 RIJCOSX SlowConv DIIS \n', 'Mult 1\n', '1      1.732000000   14.676000000 2\n', '1      1.203000000   -1.816000000 2\n', 'Mg>    2.00000000000    2.10705287155    0.00000000000   -2.14155206950\n', 's 1\n', 'd 1\n', 'end\n']
+
+    with open(Path(tmp_path_2, "MRCC_MINP_MP2_cluster_1_C-def2-SVP_Mg-def2-TZVP_O-def2-TZVPP_adsorbate")) as f:
+        mrcc_adsorbate_lines = f.readlines()[::2]
+
+    print(mrcc_adsorbate_lines)
+    assert mrcc_adsorbate_lines == ['calc=DF-MP2\n', 'verbosity=3\n', 'symm=off\n', 'scfiguess=small\n', 'scfalg=locfit1\n', 'def2-SVP\n', 'def2-SVP\n', 'def2-SVP\n', 'def2-SVP\n', '\n', 'basis=atomtype\n', 'def2-TZVPP\n', 'def2-TZVPP\n', 'def2-TZVPP\n', 'def2-TZVPP\n', '\n', 'def2-QZVPP-RI-JK\n', 'def2-QZVPP-RI-JK\n', 'def2-QZVPP-RI-JK\n', 'def2-QZVPP-RI-JK\n', '\n', 'dfbasis_cor=atomtype\n', 'def2-TZVPP-RI\n', 'def2-TZVPP-RI\n', 'def2-TZVPP-RI\n', 'def2-TZVPP-RI\n', '\n', 'none\n', 'none\n', 'none\n', 'none\n', '\n', 'mult=1\n', 'geom=xyz\n', '\n', 'O                       0.00000000000    0.00000000000    3.12800000000\n', 'O                      -2.12018425659    0.00000000000    0.00567209089\n', 'O                       2.12018425659    0.00000000000    0.00567209089\n', 'O                       0.00000000000    0.00000000000   -2.14129966123\n', 'ghost=serialno\n', '\n']
+
+    # Check if ValueError raised when basis set is not given as either string or dictionary
+    with pytest.raises(ValueError, match="basis must be given as a string or a dictionary."):
+        skzcam_input_set = SKZCAMInputSet(
+        adsorbate_slab_embedded_cluster=skzcam_clusters_output[
+            "adsorbate_slab_embedded_cluster"
+        ],
+        quantum_cluster_indices_set=skzcam_clusters_output[
+            "quantum_cluster_indices_set"
+        ],
+        ecp_region_indices_set=skzcam_clusters_output["ecp_region_indices_set"],
+        mp2_oniom1_ll={
+            "max_cluster_num": 2,
+            "frozencore": "semicore",
+            "basis": [0,0,0],
+            "code": "mrcc",
+        }
+    ).generate_input(tmp_path)
+
+
 
 
 def test_MRCCInputGenerator_init(adsorbate_slab_embedded_cluster, element_info):
