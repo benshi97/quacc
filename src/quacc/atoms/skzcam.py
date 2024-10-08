@@ -128,7 +128,29 @@ has_chemshell = find_spec("chemsh") is not None
 
 class SKZCAMInputSet:
     """
-    A class to generate the complete set of SKZCAM inputs for performing direct MRCC and/or ORCA calculations. We define different ONIOM"""
+    A class to generate the complete set of SKZCAM inputs for performing direct MRCC and/or ORCA calculations. We define the possibility to have 4 ONIOM layers, each of which has a low-level (ll) and high-level (hl) calculation (see: doi.org/10.1021/jp962071j). It is assumed that the low-level for the subsequent ONIOM level is the high-level for the previous ONIOM level. The deltaCC calculation is also included as an option.
+    
+    Attributes
+    ----------
+    adsorbate_slab_embedded_cluster
+        The ASE Atoms object containing the atomic coordinates and atomic charges from the .pun file, as well as the atom type. This object is created by the [quacc.atoms.skzcam.CreateSKZCAMClusters][] class.
+    quantum_cluster_indices_set
+        A list of lists containing the indices of the atoms of a set of quantum clusters. These indices are provided by the [quacc.atoms.skzcam.CreateSKZCAMClusters][] class.
+    ecp_region_indices_set
+        A list of lists containing the indices of the atoms in the ECP region of a set of quantum clusters. These indices are provided by the [quacc.atoms.skzcam.CreateSKZCAMClusters][] class.
+    mp2_oniom1_ll
+        A dictionary containing the information for the "low-level" MP2 treatment of ONIOM layer 1.
+    mp2_oniom1_hl
+        A dictionary containing the information for the "high-level" MP2 treatment of ONIOM layer 1.
+    mp2_oniom2_hl
+        A dictionary containing the information for the "high-level" MP2 treatment of ONIOM layer 2.
+    mp2_oniom3_hl
+        A dictionary containing the information for the "high-level" MP2 treatment of ONIOM layer 3.
+    mp2_oniom4_hl
+        A dictionary containing the information for the "high-level" MP2 treatment of ONIOM layer 4.
+    deltaCC
+        A dictionary containing the information for the deltaCC calculation.
+    """
 
     def __init__(
         self,
