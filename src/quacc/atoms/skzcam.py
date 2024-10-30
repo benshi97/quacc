@@ -1513,7 +1513,7 @@ coords
         # Add the pal_nprocs_block
         if self.pal_nprocs_block is not None:
             preamble_input += f"%pal nprocs {self.pal_nprocs_block['nprocs']} end\n"
-            preamble_input += f"%maxcore {self.pal_nprocs_block['maxcore']} end\n"
+            preamble_input += f"%maxcore {self.pal_nprocs_block['maxcore']}\n"
 
         # Add pointcharge file to read. It will be assumed that it is in the same folder as the input file
         preamble_input += '%pointcharges "orca.pc"\n'
@@ -1565,7 +1565,7 @@ coords
                 == 1
             ):
                 preamble_input += (
-                    f"""Aux {self.element_info[element_symbols[0]]['ri_scf_basis']}\n"""
+                    f"""Aux "{self.element_info[element_symbols[0]]['ri_scf_basis']}"\n"""
                 )
             else:
                 for element in element_symbols:
