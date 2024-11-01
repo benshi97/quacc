@@ -1509,7 +1509,7 @@ def test_SKZCAMInputSet_generate_input(skzcam_clusters_output, tmp_path):
         "def2-SVP\n",
         "def2-SVP\n",
         "\n",
-        "basis=atomtype\n",
+        "basis=special\n",
         "aug-cc-pVDZ\n",
         "aug-cc-pVDZ\n",
         "aug-cc-pVDZ\n",
@@ -1520,7 +1520,7 @@ def test_SKZCAMInputSet_generate_input(skzcam_clusters_output, tmp_path):
         "def2-QZVPP-RI-JK\n",
         "def2-QZVPP-RI-JK\n",
         "\n",
-        "dfbasis_cor=atomtype\n",
+        "dfbasis_cor=special\n",
         "aug-cc-pVDZ-RI\n",
         "aug-cc-pVDZ-RI\n",
         "aug-cc-pVDZ-RI\n",
@@ -1631,7 +1631,7 @@ def test_SKZCAMInputSet_generate_input(skzcam_clusters_output, tmp_path):
         "def2-SVP\n",
         "def2-SVP\n",
         "\n",
-        "basis=atomtype\n",
+        "basis=special\n",
         "def2-TZVPP\n",
         "def2-TZVPP\n",
         "def2-TZVPP\n",
@@ -1642,7 +1642,7 @@ def test_SKZCAMInputSet_generate_input(skzcam_clusters_output, tmp_path):
         "def2-QZVPP-RI-JK\n",
         "def2-QZVPP-RI-JK\n",
         "\n",
-        "dfbasis_cor=atomtype\n",
+        "dfbasis_cor=special\n",
         "def2-TZVPP-RI\n",
         "def2-TZVPP-RI\n",
         "def2-TZVPP-RI\n",
@@ -1761,21 +1761,21 @@ def test_MRCCInputGenerator_generate_input(mrcc_input_generator):
     reference_block_collated = {
         "adsorbate_slab": {
             "float": [21.0, -2.0, 2.0, 2.0, 2.0, 0.1474277671],
-            "string": ["basis_sm=atomtype", "def2/JK", "capECP"],
+            "string": ["basis_sm=special", "def2/JK", "capECP"],
         },
-        "adsorbate": {"float": [8.0], "string": ["basis_sm=atomtype", "C"]},
+        "adsorbate": {"float": [8.0], "string": ["basis_sm=special", "C"]},
         "slab": {
             "float": [21.0, -2.0, 2.0, 2.0, 2.0, 0.1474277671],
-            "string": ["basis_sm=atomtype", "def2/JK", "capECP"],
+            "string": ["basis_sm=special", "def2/JK", "capECP"],
         },
     }
 
     reference_block_nocp_collated = {
         "adsorbate_slab": {
             "float": [21.0, -2.0, 2.0, 2.0, 2.0, 0.1474277671],
-            "string": ["basis_sm=atomtype", "def2/JK", "capECP"],
+            "string": ["basis_sm=special", "def2/JK", "capECP"],
         },
-        "adsorbate": {"float": [2.0], "string": ["basis_sm=atomtype"]},
+        "adsorbate": {"float": [2.0], "string": ["basis_sm=special"]},
         "slab": {
             "float": [
                 19.0,
@@ -1785,7 +1785,7 @@ def test_MRCCInputGenerator_generate_input(mrcc_input_generator):
                 2.11024676395,
                 -0.0,
             ],
-            "string": ["basis_sm=atomtype", "no-basis-set", "charge=-8"],
+            "string": ["basis_sm=special", "no-basis-set", "charge=-8"],
         },
     }
 
@@ -1854,7 +1854,7 @@ def test_MRCCInputGenerator_generate_basis_ecp_block(mrcc_input_generator):
 
     reference_mrcc_blocks_collated = {
         "adsorbate_slab": [
-            "basis_sm=atomtype",
+            "basis_sm=special",
             "no-basis-set",
             "no-basis-set",
             "aug-cc-pVDZ",
@@ -1867,7 +1867,7 @@ def test_MRCCInputGenerator_generate_basis_ecp_block(mrcc_input_generator):
             "capECP",
         ],
         "slab": [
-            "basis_sm=atomtype",
+            "basis_sm=special",
             "no-basis-set",
             "no-basis-set",
             "aug-cc-pVDZ",
@@ -1880,7 +1880,7 @@ def test_MRCCInputGenerator_generate_basis_ecp_block(mrcc_input_generator):
             "capECP",
         ],
         "adsorbate": [
-            "basis_sm=atomtype",
+            "basis_sm=special",
             "aug-cc-pVDZ",
             "def2/JK",
             "cc-pVDZ/C",
@@ -1890,7 +1890,7 @@ def test_MRCCInputGenerator_generate_basis_ecp_block(mrcc_input_generator):
 
     reference_mrcc_blocks_nocp_collated = {
         "adsorbate_slab": [
-            "basis_sm=atomtype",
+            "basis_sm=special",
             "no-basis-set",
             "no-basis-set",
             "aug-cc-pVDZ",
@@ -1903,18 +1903,18 @@ def test_MRCCInputGenerator_generate_basis_ecp_block(mrcc_input_generator):
             "capECP",
         ],
         "slab": [
-            "basis_sm=atomtype",
+            "basis_sm=special",
             "no-basis-set",
-            "basis=atomtype",
+            "basis=special",
             "no-basis-set",
-            "dfbasis_scf=atomtype",
+            "dfbasis_scf=special",
             "no-basis-set",
-            "dfbasis_cor=atomtype",
+            "dfbasis_cor=special",
             "no-basis-set",
-            "ecp=atomtype",
+            "ecp=special",
             "capECP",
         ],
-        "adsorbate": ["basis_sm=atomtype", "aug-cc-pVDZ/C"],
+        "adsorbate": ["basis_sm=special", "aug-cc-pVDZ/C"],
     }
 
     generated_mrcc_blocks_nocp_collated = {
@@ -2221,90 +2221,30 @@ def test_ORCAInputGenerator_generate_input(orca_input_generator):
     reference_block_collated = {
         "adsorbate_slab": {
             "float": [1.0, 2.0, 1.0, 0.0, 2.0],
-            "string": [
-                "%pal",
-                "NewNCore",
-                "O",
-                '"aug-cc-pVDZ/C"',
-                '"orca_svp_start.gbw"',
-                "O",
-                "Mg>",
-                "d",
-                "f",
-                "NewECP",
-                "f",
-                "s",
-                "N_core",
-                "end",
-            ],
+            "string": ['%pal', 'Mg', '"aug-cc-pVDZ"', 'end', 'SCFMode', 'Mg', 'NewECP', 'f', 's', 'N_core', 'end', 'p', 'lmax', 'end'],
         },
         "adsorbate": {
             "float": [1.0],
-            "string": ["%pal", "end", "end", "NewAuxCGTO", "Direct", "O:"],
+            "string": ['%pal', 'NewNCore', 'NewAuxJGTO', 'Mg', 'sthresh', 'O:'],
         },
         "slab": {
             "float": [1.0, 2.0, 1.0, 0.0, 2.0],
-            "string": [
-                "%pal",
-                "NewNCore",
-                "O",
-                '"aug-cc-pVDZ/C"',
-                '"orca_svp_start.gbw"',
-                "O:",
-                "Mg>",
-                "d",
-                "f",
-                "NewECP",
-                "f",
-                "s",
-                "N_core",
-                "end",
-            ],
+            "string": ['%pal', 'Mg', '"aug-cc-pVDZ"', 'end', 'SCFMode', 'Mg', 'NewECP', 'f', 's', 'N_core', 'end', 'p', 'lmax', 'end'], 
         },
     }
 
     reference_block_nocp_collated = {
         "adsorbate_slab": {
             "float": [1.0, 2.0, 1.0, 0.0, 2.0],
-            "string": [
-                "%pal",
-                "NewNCore",
-                "O",
-                '"aug-cc-pVDZ/C"',
-                '"orca_svp_start.gbw"',
-                "O",
-                "Mg>",
-                "d",
-                "f",
-                "NewECP",
-                "f",
-                "s",
-                "N_core",
-                "end",
-            ],
+            "string": ['%pal', 'Mg', '"aug-cc-pVDZ"', 'end', 'SCFMode', 'Mg', 'NewECP', 'f', 's', 'N_core', 'end', 'p', 'lmax', 'end'],
         },
         "adsorbate": {
             "float": [1.0],
-            "string": ["%pal", "end", "end", "NewAuxCGTO", "Direct", "end"],
+            "string": ['%pal', 'NewNCore', 'NewAuxJGTO', 'Mg', 'sthresh'],
         },
         "slab": {
             "float": [1.0, 2.0, 2.10705287155, 0.0, 1.0],
-            "string": [
-                "%pal",
-                "NewNCore",
-                "O",
-                '"aug-cc-pVDZ/C"',
-                '"orca_svp_start.gbw"',
-                "O",
-                "N_core",
-                "end",
-                "p",
-                "lmax",
-                "Mg>",
-                "d",
-                "f",
-                "end",
-            ],
+            "string": ['%pal', 'Mg', '"aug-cc-pVDZ"', 'end', 'SCFMode', 'O', 'lmax', 'Mg>', 'd', 'f', 'NewECP', 'f', 's'],
         },
     }
 
@@ -2614,12 +2554,12 @@ def test_ORCAInputGenerator_generate_preamble_block(orca_input_generator):
 
     assert (
         orca_input_generator_1.orcablocks["adsorbate_slab"]
-        == '%pal nprocs 1 end\n%maxcore 5000 end\n%pointcharges "orca.pc"\n%method\nMethod hf\nRI on\nRunTyp Energy\nNewNCore C 2 end\nNewNCore Mg 2 end\nNewNCore O 2 end\nend\n%basis\nNewGTO C "aug-cc-pVDZ" end\nNewGTO Mg "cc-pVDZ" end\nNewGTO O "aug-cc-pVDZ" end\nNewAuxJGTO C "def2/J" end\nNewAuxJGTO Mg "def2/J" end\nNewAuxJGTO O "def2/JK" end\nNewAuxCGTO C "aug-cc-pVDZ/C" end\nNewAuxCGTO Mg "cc-pVDZ/C" end\nNewAuxCGTO O "aug-cc-pVDZ/C" end\nend\n%scf\nHFTyp rhf\nGuess MORead\nMOInp "orca_svp_start.gbw"\nSCFMode Direct\nsthresh 1e-6\nAutoTRAHIter 60\nMaxIter 1000\nend\n'
+        == '%pal nprocs 1 end\n%maxcore 5000\n%pointcharges "orca.pc"\n%method\nMethod hf\nRI on\nRunTyp Energy\nNewNCore C 2 end\nNewNCore Mg 2 end\nNewNCore O 2 end\nend\n%basis\nNewGTO C "aug-cc-pVDZ" end\nNewGTO Mg "cc-pVDZ" end\nNewGTO O "aug-cc-pVDZ" end\nNewAuxJGTO C "def2/J" end\nNewAuxJGTO Mg "def2/J" end\nNewAuxJGTO O "def2/JK" end\nNewAuxCGTO C "aug-cc-pVDZ/C" end\nNewAuxCGTO Mg "cc-pVDZ/C" end\nNewAuxCGTO O "aug-cc-pVDZ/C" end\nend\n%scf\nHFTyp rhf\nGuess MORead\nMOInp "orca_svp_start.gbw"\nSCFMode Direct\nsthresh 1e-6\nAutoTRAHIter 60\nMaxIter 1000\nend\n'
     )
 
     assert (
         orca_input_generator_1.orcablocks["adsorbate"]
-        == '%pal nprocs 1 end\n%maxcore 5000 end\n%method\nMethod hf\nRI on\nRunTyp Energy\nNewNCore C 2 end\nNewNCore Mg 2 end\nNewNCore O 2 end\nend\n%basis\nNewGTO C "aug-cc-pVDZ" end\nNewGTO Mg "cc-pVDZ" end\nNewGTO O "aug-cc-pVDZ" end\nNewAuxJGTO C "def2/J" end\nNewAuxJGTO Mg "def2/J" end\nNewAuxJGTO O "def2/JK" end\nNewAuxCGTO C "aug-cc-pVDZ/C" end\nNewAuxCGTO Mg "cc-pVDZ/C" end\nNewAuxCGTO O "aug-cc-pVDZ/C" end\nend\n%scf\nHFTyp rhf\nGuess MORead\nMOInp "orca_svp_start.gbw"\nSCFMode Direct\nsthresh 1e-6\nAutoTRAHIter 60\nMaxIter 1000\nend\n'
+        == '%pal nprocs 1 end\n%maxcore 5000\n%method\nMethod hf\nRI on\nRunTyp Energy\nNewNCore C 2 end\nNewNCore Mg 2 end\nNewNCore O 2 end\nend\n%basis\nNewGTO C "aug-cc-pVDZ" end\nNewGTO Mg "cc-pVDZ" end\nNewGTO O "aug-cc-pVDZ" end\nNewAuxJGTO C "def2/J" end\nNewAuxJGTO Mg "def2/J" end\nNewAuxJGTO O "def2/JK" end\nNewAuxCGTO C "aug-cc-pVDZ/C" end\nNewAuxCGTO Mg "cc-pVDZ/C" end\nNewAuxCGTO O "aug-cc-pVDZ/C" end\nend\n%scf\nHFTyp rhf\nGuess MORead\nMOInp "orca_svp_start.gbw"\nSCFMode Direct\nsthresh 1e-6\nAutoTRAHIter 60\nMaxIter 1000\nend\n'
     )
     assert (
         orca_input_generator_1.orcablocks["adsorbate_slab"]
@@ -2652,7 +2592,7 @@ def test_ORCAInputGenerator_generate_preamble_block(orca_input_generator):
 
     assert (
         orca_input_generator_2.orcablocks["adsorbate_slab"]
-        == '%pal nprocs 1 end\n%maxcore 5000 end\n%pointcharges "orca.pc"\n%method\nMethod hf\nRI on\nRunTyp Energy\nNewNCore C 2 end\nNewNCore Mg 2 end\nNewNCore O 2 end\nend\n%basis\nBasis def2-SVP\nAux def2/J\nAuxC def2-SVP/C\nend\n%scf\nHFTyp rhf\nGuess MORead\nMOInp "orca_svp_start.gbw"\nSCFMode Direct\nsthresh 1e-6\nAutoTRAHIter 60\nMaxIter 1000\nend\n'
+        == '%pal nprocs 1 end\n%maxcore 5000\n%pointcharges "orca.pc"\n%method\nMethod hf\nRI on\nRunTyp Energy\nNewNCore C 2 end\nNewNCore Mg 2 end\nNewNCore O 2 end\nend\n%basis\nBasis "def2-SVP"\nAux "def2/J"\nAuxC "def2-SVP/C"\nend\n%scf\nHFTyp rhf\nGuess MORead\nMOInp "orca_svp_start.gbw"\nSCFMode Direct\nsthresh 1e-6\nAutoTRAHIter 60\nMaxIter 1000\nend\n'
     )
 
     # Testing the case if we provide no blocks
