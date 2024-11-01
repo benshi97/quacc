@@ -969,7 +969,7 @@ class MRCCInputGenerator:
 
         # Helper to generate basis strings for MRCC
         def _create_basis_block(quantum_region, ecp_region=None):
-            atomtype_ecp = "ecp=atomtype\n"
+            atomtype_ecp = "ecp=special\n"
             for atom in quantum_region:
                 if "ecp" in self.element_info[atom.symbol]:
                     atomtype_ecp += f"{self.element_info[atom.symbol]['ecp']}\n"
@@ -982,16 +982,16 @@ class MRCCInputGenerator:
 
             return (
                 f"""
-basis_sm=atomtype
+basis_sm=special
 {self._create_atomtype_basis(quantum_region=quantum_region, ecp_region=ecp_region, element_basis_info={element: 'def2-SVP' for element in self.element_info})}
 
-basis=atomtype
+basis=special
 {self._create_atomtype_basis(quantum_region=quantum_region, ecp_region=ecp_region, element_basis_info={element: self.element_info[element]['basis'] for element in self.element_info})}
 
-dfbasis_scf=atomtype
+dfbasis_scf=special
 {self._create_atomtype_basis(quantum_region=quantum_region, ecp_region=ecp_region, element_basis_info={element: self.element_info[element]['ri_scf_basis'] for element in self.element_info})}
 
-dfbasis_cor=atomtype
+dfbasis_cor=special
 {self._create_atomtype_basis(quantum_region=quantum_region, ecp_region=ecp_region, element_basis_info={element: self.element_info[element]['ri_cwft_basis'] for element in self.element_info})}
 
 """
@@ -1547,7 +1547,7 @@ coords
                 == 1
             ):
                 preamble_input += (
-                    f"""Basis {self.element_info[element_symbols[0]]['basis']}\n"""
+                    f"""Basis "{self.element_info[element_symbols[0]]['basis']}"\n"""
                 )
             else:
                 for element in element_symbols:
@@ -1583,7 +1583,7 @@ coords
                 )
                 == 1
             ):
-                preamble_input += f"""AuxC {self.element_info[element_symbols[0]]['ri_cwft_basis']}\n"""
+                preamble_input += f"""AuxC "{self.element_info[element_symbols[0]]['ri_cwft_basis']}"\n"""
             else:
                 for element in element_symbols:
                     element_basis = self.element_info[element]["ri_cwft_basis"]
