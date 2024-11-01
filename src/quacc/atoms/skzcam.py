@@ -1564,9 +1564,7 @@ coords
                 )
                 == 1
             ):
-                preamble_input += (
-                    f"""Aux "{self.element_info[element_symbols[0]]['ri_scf_basis']}"\n"""
-                )
+                preamble_input += f"""Aux "{self.element_info[element_symbols[0]]['ri_scf_basis']}"\n"""
             else:
                 for element in element_symbols:
                     element_basis = self.element_info[element]["ri_scf_basis"]
