@@ -167,26 +167,6 @@ class SKZCAMInputSet:
     """
     A class to generate the complete set of SKZCAM inputs for performing direct MRCC and/or ORCA calculations. We define the possibility to have 4 ONIOM layers, each of which has a low-level (ll) and high-level (hl) calculation (see: doi.org/10.1021/jp962071j). It is assumed that the low-level for the subsequent ONIOM level is the high-level for the previous ONIOM level. The deltaCC calculation is also included as an option.
 
-    Attributes
-    ----------
-    adsorbate_slab_embedded_cluster
-        The ASE Atoms object containing the atomic coordinates and atomic charges from the .pun file, as well as the atom type. This object is created by the [quacc.atoms.skzcam.CreateSKZCAMClusters][] class.
-    quantum_cluster_indices_set
-        A list of lists containing the indices of the atoms of a set of quantum clusters. These indices are provided by the [quacc.atoms.skzcam.CreateSKZCAMClusters][] class.
-    ecp_region_indices_set
-        A list of lists containing the indices of the atoms in the ECP region of a set of quantum clusters. These indices are provided by the [quacc.atoms.skzcam.CreateSKZCAMClusters][] class.
-    mp2_oniom1_ll
-        A dictionary containing the information for the "low-level" MP2 treatment of ONIOM layer 1.
-    mp2_oniom1_hl
-        A dictionary containing the information for the "high-level" MP2 treatment of ONIOM layer 1.
-    mp2_oniom2_hl
-        A dictionary containing the information for the "high-level" MP2 treatment of ONIOM layer 2.
-    mp2_oniom3_hl
-        A dictionary containing the information for the "high-level" MP2 treatment of ONIOM layer 3.
-    mp2_oniom4_hl
-        A dictionary containing the information for the "high-level" MP2 treatment of ONIOM layer 4.
-    deltaCC
-        A dictionary containing the information for the deltaCC calculation.
     """
 
     def __init__(
@@ -200,7 +180,7 @@ class SKZCAMInputSet:
         mp2_oniom3_hl: SKZCAMInfo | None = None,
         mp2_oniom4_hl: SKZCAMInfo | None = None,
         deltaCC: SKZCAMInfo | None = None,
-    ):
+    ) -> None:
         """
         Parameters
         ----------
@@ -245,9 +225,7 @@ class SKZCAMInputSet:
             """
 
             # Raise error if the code is not provided or not specified as 'mrcc' or 'orca'.
-            if "code" not in oniom_dict:
-                raise ValueError("The code must be specified.")
-            if oniom_dict["code"] not in ["mrcc", "orca"]:
+            if oniom_dict.get("code", None) not in ["mrcc", "orca"]:
                 raise ValueError("The code must be either 'mrcc' or 'orca'.")
 
             if "multiplicities" not in oniom_dict:
@@ -359,20 +337,24 @@ class SKZCAMInputSet:
         ecp: dict[ElementStr, str],
         ri_scf_basis: dict[ElementStr, str] | None = None,
         ri_cwft_basis: dict[ElementStr, str] | None = None,
-    ):
+    ) -> dict[ElementStr, ElementInfo]:
         """
         Creates the element info dictionary for the SKZCAM input across each oniom layer.
 
         Parameters
         ----------
+        frozencore
+            The frozen core to use for the quantum cluster. This could be specified as a string being either 'semicore' or 'valence'.
         basis
             The basis set to use for the quantum cluster. This could be either double-zeta, triple-zeta, quadruple-zeta, quintuple-zeta, denoted as 'DZ', 'TZ',' QZ' and '5Z' respectively.
-        frozencore
-            The frozen core to use for the quantum cluster. This could be specified as a string being either 'semicore' or 'valence'
         code
             The code to use for the quantum cluster. This could be either mrcc or orca.
         ecp
             The effective core potential to use for each element within the quantum cluster.
+        ri_scf_basis
+            The resolution-of-identity/density-fitting auxiliary basis set for DFT/HF calculations.
+        ri_cwft_basis
+            The resolution-of-identity/density-fitting for correlated wave-function methods.
 
         Returns
         -------
@@ -554,7 +536,7 @@ class SKZCAMInputSet:
 
         return element_info_dict
 
-    def generate_input(self, input_dir: str | Path):
+    def generate_input(self, input_dir: str | Path) -> None:
         """
         Generates the SKZCAM input for the MRCC and ORCA ASE calculators.
 
