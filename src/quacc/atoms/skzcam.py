@@ -94,7 +94,8 @@ valence_frozen_core_dict = {
 }
 
 skzcam_cation_cap_ecp = {
-    'orca': {"Ti": """NewECP
+    "orca": {
+        "Ti": """NewECP
 N_core 0
   lmax f
   s 2
@@ -109,7 +110,7 @@ N_core 0
   f 1
    1      1.000000000    0.000000000 2
 end""",
-    "Mg": """NewECP
+        "Mg": """NewECP
 N_core 0
 lmax f
 s 1
@@ -120,8 +121,10 @@ d 1
 1      1.203000000   -1.816000000 2
 f 1
 1      1.000000000    0.000000000 2
-end"""},
-    'mrcc': {"Ti": """
+end""",
+    },
+    "mrcc": {
+        "Ti": """
 Ti:capECP
 Stuttgart RSC 1997 ECP
 *
@@ -139,7 +142,7 @@ d-f
    -0.151370000  2     0.320000000
 *
 """,
-             "Mg": """
+        "Mg": """
 Mg:capECP
 Stuttgart RLC ECP
 *
@@ -153,9 +156,9 @@ p-f
 d-f
    -1.816000000  2     1.203000000
 *
-"""
+""",
+    },
 }
-    }
 
 has_chemshell = find_spec("chemsh") is not None
 
@@ -279,7 +282,9 @@ class SKZCAMInputSet:
                         "MaxIter": "1000",
                     }
                 if "cation_cap_ecp" not in oniom_dict:
-                    oniom_dict["cation_cap_ecp"] = skzcam_cation_cap_ecp[oniom_dict["code"]]
+                    oniom_dict["cation_cap_ecp"] = skzcam_cation_cap_ecp[
+                        oniom_dict["code"]
+                    ]
             return oniom_dict
 
         self.adsorbate_slab_embedded_cluster = adsorbate_slab_embedded_cluster
