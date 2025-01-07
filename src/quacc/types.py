@@ -272,9 +272,9 @@ if TYPE_CHECKING:
         max_memory: int | None
         element_ecp: dict[ElementStr, str] | None
         multiplicities: MultiplicityDict | None
+        cation_cap_ecp: dict[ElementStr, str] | None
         orca_method_block: dict[str, str] | None
         orca_scf_block: dict[str, str] | None
-        orca_cation_cap_ecp: dict[ElementStr, str] | None
         mrcc_calc_inputs: dict[str, str] | None
 
     class BlockInfo(TypedDict):
